@@ -1,0 +1,10 @@
+*
+!*.js
+!*.json
+!*.md
+!*.yaml
+!*.yml
+!.vscode/
+!src/
+pnpm-lock.yaml
+pnpm-workspace.yaml
