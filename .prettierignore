@@ -1,10 +1,12 @@
 *
 !*.js
+!*.ts
 !*.json
 !*.md
 !*.yaml
 !*.yml
 !.vscode/
 !src/
+!tests/
 pnpm-lock.yaml
 pnpm-workspace.yaml
