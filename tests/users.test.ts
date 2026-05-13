@@ -30,19 +30,25 @@ describe("Users routes", () => {
     it("returns 404 for all-zero UUID", async () => {
       const res = await app.request(`${BASE}/00000000-0000-0000-0000-000000000000`);
       expect(res.status).toBe(404);
+      expect(res.headers.get("content-type")).toContain("application/problem+json");
       const body = await res.json();
       expect(body).toEqual({
-        success: false,
-        error: { name: "HTTPException", message: "User not found" },
+        type: "about:blank",
+        title: "Not Found",
+        status: 404,
+        detail: "User not found",
+        instance: `${BASE}/00000000-0000-0000-0000-000000000000`,
       });
     });
 
     it("returns 400 for invalid UUID", async () => {
       const res = await app.request(`${BASE}/not-a-uuid`);
       expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body).toHaveProperty("success", false);
-      expect(body).toHaveProperty("error.name", "ZodError");
+      expect(res.headers.get("content-type")).toContain("application/problem+json");
+      const body = (await res.json()) as { title: string; status: number; errors?: unknown };
+      expect(body.title).toBe("Bad Request");
+      expect(body.status).toBe(400);
+      expect(body.errors).toBeInstanceOf(Array);
     });
   });
 
@@ -77,10 +83,14 @@ describe("Users routes", () => {
         }),
       });
       expect(res.status).toBe(409);
+      expect(res.headers.get("content-type")).toContain("application/problem+json");
       const body = await res.json();
       expect(body).toEqual({
-        success: false,
-        error: { name: "HTTPException", message: "Email already exists" },
+        type: "about:blank",
+        title: "Conflict",
+        status: 409,
+        detail: "Email already exists",
+        instance: BASE,
       });
     });
 
@@ -91,9 +101,11 @@ describe("Users routes", () => {
         body: JSON.stringify({ email: "not-an-email" }),
       });
       expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body).toHaveProperty("success", false);
-      expect(body).toHaveProperty("error.name", "ZodError");
+      expect(res.headers.get("content-type")).toContain("application/problem+json");
+      const body = (await res.json()) as { title: string; status: number; errors?: unknown };
+      expect(body.title).toBe("Bad Request");
+      expect(body.status).toBe(400);
+      expect(body.errors).toBeInstanceOf(Array);
     });
   });
 });

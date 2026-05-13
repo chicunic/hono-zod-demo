@@ -2,46 +2,41 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
+import { secureHeaders } from "hono/secure-headers";
 import { config } from "./config.js";
 import { logger } from "./logger.js";
 import authApp from "./routes/auth.js";
 import usersApp from "./routes/users.js";
-import { defaultHook } from "./schemas.js";
+import { defaultHook, problemResponse } from "./schemas.js";
 
 const app = new OpenAPIHono({ defaultHook: defaultHook() });
-const { PORT: port, ROUTE_PREFIX: routePrefix } = config;
-const baseUrl = `http://localhost:${String(port)}`;
 
+app.use("*", secureHeaders());
 app.use("*", cors());
 
-app.notFound((c) => c.json({ success: false as const, error: { name: "NotFound", message: "Route not found" } }, 404));
+app.notFound((c) => problemResponse(c, 404, "Route not found"));
 
 app.onError((err, c) => {
-  if (err instanceof HTTPException) {
-    return c.json({ success: false as const, error: { name: "HTTPException", message: err.message } }, err.status);
-  }
+  if (err instanceof HTTPException) return problemResponse(c, err.status, err.message);
   logger.error("Unhandled error", { message: err.message, stack: err.stack });
-  return c.json(
-    { success: false as const, error: { name: "InternalServerError", message: "Internal server error" } },
-    500,
-  );
+  return problemResponse(c, 500, "Internal server error");
 });
 
 app.get("/", (c) => c.json({ name: "Hono + Zod OpenAPI Demo", version: "0.0.1" }));
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-app.route(`${routePrefix}/users`, usersApp);
-app.route(`${routePrefix}/auth`, authApp);
+app.route(`${config.ROUTE_PREFIX}/users`, usersApp);
+app.route(`${config.ROUTE_PREFIX}/auth`, authApp);
 
 app.doc("/openapi.json", {
   openapi: "3.1.0",
   info: {
     title: "Hono + Zod OpenAPI Demo",
     version: "0.0.1",
-    description: "Demo of Hono with Zod OpenAPI and Swagger UI.",
+    description: "Demo of Hono with Zod OpenAPI and Swagger UI. Errors follow RFC 9457 (Problem Details).",
     license: { name: "MIT" },
   },
-  servers: [{ url: baseUrl, description: "Local" }],
+  servers: [{ url: `http://localhost:${config.PORT}`, description: "Local" }],
 });
 
 app.get("/docs", swaggerUI({ url: "/openapi.json" }));

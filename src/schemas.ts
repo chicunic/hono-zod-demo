@@ -1,27 +1,65 @@
-import type { Env } from "hono";
+import { STATUS_CODES } from "node:http";
+import type { Context, Env } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { Hook } from "@hono/zod-openapi";
 import { z } from "@hono/zod-openapi";
 
-export const ErrorSchema = z
-  .object({
-    success: z.literal(false).meta({ example: false }),
-    error: z.object({
-      name: z.string().meta({ example: "HTTPException" }),
-      message: z.string().meta({ example: "Unauthorized" }),
-    }),
-  })
-  .meta({ id: "Error" });
+export const EXAMPLE_UUID = "550e8400-e29b-41d4-a716-446655440000";
+export const EXAMPLE_EMAIL = "jane@doe.com";
+export const EXAMPLE_NAME = "Jane Doe";
 
-export const defaultHook =
-  <E extends Env>(): Hook<unknown, E, string, unknown> =>
-  (result, c) => {
-    if (!result.success) {
-      return c.json(
-        {
-          success: false as const,
-          error: { name: "ZodError", message: result.error.issues[0]?.message ?? "Validation failed" },
-        },
-        400,
-      );
-    }
+const PROBLEM_JSON = "application/problem+json";
+const PROBLEM_HEADERS = { "Content-Type": PROBLEM_JSON };
+
+export const ProblemDetailsSchema = z
+  .object({
+    type: z.string().meta({
+      description: 'URI reference identifying the problem type (currently "about:blank")',
+      example: "about:blank",
+    }),
+    title: z.string().meta({ description: "Short, human-readable summary", example: "Unauthorized" }),
+    status: z.number().int().meta({ description: "HTTP status code", example: 401 }),
+    detail: z.string().optional().meta({ description: "Human-readable explanation", example: "Unauthorized" }),
+    instance: z.string().optional().meta({ description: "URI reference identifying the specific occurrence" }),
+    errors: z
+      .array(
+        z.object({
+          path: z.string().meta({ example: "email" }),
+          message: z.string().meta({ example: "Invalid email" }),
+        }),
+      )
+      .optional()
+      .meta({ description: "Field-level validation errors" }),
+  })
+  .meta({ id: "ProblemDetails" });
+
+export type ProblemDetails = z.infer<typeof ProblemDetailsSchema>;
+
+function buildProblem(c: Context, status: number, detail?: string, errors?: ProblemDetails["errors"]): ProblemDetails {
+  return {
+    type: "about:blank",
+    title: STATUS_CODES[status] ?? "Error",
+    status,
+    ...(detail ? { detail } : {}),
+    instance: c.req.path,
+    ...(errors ? { errors } : {}),
   };
+}
+
+export function problemResponse(c: Context, status: ContentfulStatusCode, detail?: string): Response {
+  return c.json(buildProblem(c, status, detail), status, PROBLEM_HEADERS);
+}
+
+export const jsonError = (description: string) => ({
+  content: { [PROBLEM_JSON]: { schema: ProblemDetailsSchema } },
+  description,
+});
+
+export function defaultHook<E extends Env>(): Hook<unknown, E, string, unknown> {
+  return (result, c) => {
+    if (result.success) return undefined;
+    const errors = result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message }));
+    const detail = errors[0]?.message ?? "Validation failed";
+    return c.json(buildProblem(c, 400, detail, errors), 400, PROBLEM_HEADERS);
+  };
+}

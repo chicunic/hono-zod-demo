@@ -22,13 +22,17 @@ describe("Root routes", () => {
     expect(body).toHaveProperty("info.title", "Hono + Zod OpenAPI Demo");
   });
 
-  it("GET /unknown returns 404", async () => {
+  it("GET /unknown returns 404 Problem Details", async () => {
     const res = await app.request("/unknown");
     expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toContain("application/problem+json");
     const body = await res.json();
     expect(body).toEqual({
-      success: false,
-      error: { name: "NotFound", message: "Route not found" },
+      type: "about:blank",
+      title: "Not Found",
+      status: 404,
+      detail: "Route not found",
+      instance: "/unknown",
     });
   });
 });
