@@ -23,6 +23,7 @@ export default defineConfig([
       "sort-imports": ["error", { ignoreDeclarationSort: true }],
       "object-shorthand": "error",
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true, allowBoolean: true }],
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
   {

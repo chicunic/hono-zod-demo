@@ -10,9 +10,9 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
-  "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a",
+  "packageManager": "pnpm@11.7.0+sha512.19cc852c120c7125760f2443ee6be0ca5b40f9f50598de1a09a1f177503e010e57c23c77646e01e761de59bf874fb22a3398c33ab9691fc13eb946b6f0f4d620",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
     "start": "tsx --env-file-if-exists=.env src/server.ts",
@@ -25,24 +25,24 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@hono/node-server": "^2.0.2",
+    "@hono/node-server": "^2.0.5",
     "@hono/swagger-ui": "^0.6.1",
     "@hono/zod-openapi": "^1.4.0",
-    "hono": "^4.12.21",
+    "hono": "^4.12.25",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.7.0",
-    "@vitest/eslint-plugin": "^1.6.17",
-    "eslint": "^10.3.0",
+    "@types/node": "^25.9.3",
+    "@vitest/eslint-plugin": "^1.6.20",
+    "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "jiti": "^2.7.0",
-    "prettier": "^3.8.3",
-    "tsx": "^4.21.0",
+    "prettier": "^3.8.4",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.3",
-    "vitest": "^4.1.6"
+    "typescript-eslint": "^8.61.1",
+    "vitest": "^4.1.9"
   }
 }
