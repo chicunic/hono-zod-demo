@@ -1,7 +1,17 @@
 {
   "name": "hono-zod-demo",
   "version": "0.0.1",
+  "private": true,
   "description": "Hono + Zod OpenAPI Demo",
+  "keywords": [
+    "hono",
+    "zod",
+    "openapi",
+    "swagger",
+    "typescript",
+    "rest-api",
+    "template"
+  ],
   "license": "MIT",
   "author": "chicunic",
   "repository": {
@@ -9,6 +19,7 @@
     "url": "git+https://github.com/chicunic/hono-zod-demo.git"
   },
   "type": "module",
+  "main": "dist/server.js",
   "engines": {
     "node": ">=26"
   },
@@ -19,6 +30,7 @@
     "start:prod": "node --env-file-if-exists=.env dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "build": "tsc -p tsconfig.build.json",
     "check": "tsc && eslint . && prettier --check .",
     "fix": "eslint . --fix && prettier --write .",
@@ -34,6 +46,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.9.3",
+    "@vitest/coverage-v8": "^4.1.9",
     "@vitest/eslint-plugin": "^1.6.20",
     "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",

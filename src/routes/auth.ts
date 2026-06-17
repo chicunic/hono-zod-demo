@@ -4,7 +4,7 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { sign, verify } from "hono/jwt";
 import { config } from "../config.js";
-import { EXAMPLE_EMAIL, EXAMPLE_UUID, defaultHook, jsonError } from "../schemas.js";
+import { EXAMPLE_EMAIL, EXAMPLE_UUID, defaultHook, extractBearerToken, jsonError } from "../schemas.js";
 
 const { NODE_ENV, JWT_SECRET, JWT_EXPIRES_IN, SESSION_SECRET } = config;
 const SESSION_COOKIE = "session";
@@ -33,7 +33,7 @@ const JwtLoginResponseSchema = LoginParamsSchema.extend({
 }).meta({ id: "JwtLoginResponse" });
 
 const jwtAuth = createMiddleware<Env>(async (c, next) => {
-  const token = c.req.header("Authorization")?.split(" ")[1];
+  const token = extractBearerToken(c.req.header("Authorization"));
   if (!token) throw new HTTPException(401, { message: "Authorization header missing" });
   try {
     c.set("jwtPayload", await verify(token, JWT_SECRET, "HS256"));

@@ -63,3 +63,8 @@ export function defaultHook<E extends Env>(): Hook<unknown, E, string, unknown> 
     return c.json(buildProblem(c, 400, detail, errors), 400, PROBLEM_HEADERS);
   };
 }
+
+/** Extract the token from a `Bearer <token>` Authorization header, or undefined if absent/malformed. */
+export function extractBearerToken(authHeader: string | undefined): string | undefined {
+  return authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+}

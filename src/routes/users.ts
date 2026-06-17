@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { HTTPException } from "hono/http-exception";
+import { ConflictError, NotFoundError } from "../errors.js";
 import { EXAMPLE_EMAIL, EXAMPLE_NAME, EXAMPLE_UUID, defaultHook, jsonError } from "../schemas.js";
 
 const UserSchema = z
@@ -57,7 +57,7 @@ app.openapi(
     const { userId } = c.req.valid("param");
     const { name } = c.req.valid("query");
     if (userId === "00000000-0000-0000-0000-000000000000") {
-      throw new HTTPException(404, { message: "User not found" });
+      throw new NotFoundError("User not found");
     }
     return c.json(
       { userId, email: EXAMPLE_EMAIL, name: name ?? EXAMPLE_NAME, status: "Happy" as const, phoneNumbers: [] },
@@ -97,7 +97,7 @@ app.openapi(
   (c) => {
     const body = c.req.valid("json");
     if (body.email === "exists@example.com") {
-      throw new HTTPException(409, { message: "Email already exists" });
+      throw new ConflictError("Email already exists");
     }
     const user = { userId: randomUUID(), status: "Happy" as const, ...body };
     return c.json(user, 201, { Location: `${c.req.path}/${user.userId}` });

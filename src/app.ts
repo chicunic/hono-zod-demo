@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { secureHeaders } from "hono/secure-headers";
 import { config } from "./config.js";
+import { AppError, appErrorToProblem } from "./errors.js";
 import { logger } from "./logger.js";
 import authApp from "./routes/auth.js";
 import usersApp from "./routes/users.js";
@@ -17,6 +18,7 @@ app.use("*", cors());
 app.notFound((c) => problemResponse(c, 404, "Route not found"));
 
 app.onError((err, c) => {
+  if (err instanceof AppError) return appErrorToProblem(err, c);
   if (err instanceof HTTPException) return problemResponse(c, err.status, err.message);
   logger.error("Unhandled error", { message: err.message, stack: err.stack });
   return problemResponse(c, 500, "Internal server error");
