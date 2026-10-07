@@ -5,6 +5,20 @@ import eslintConfigPrettier from "eslint-config-prettier";
 import vitest from "@vitest/eslint-plugin";
 import tseslint from "typescript-eslint";
 
+const sharedExtends = [
+  eslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+  eslintConfigPrettier,
+];
+
+const sharedLanguageOptions = {
+  parserOptions: {
+    projectService: true,
+    tsconfigRootDir: import.meta.dirname,
+  },
+};
+
 const sharedRules: Linter.RulesRecord = {
   "sort-imports": ["error", { ignoreDeclarationSort: true }],
   "object-shorthand": "error",
@@ -16,35 +30,15 @@ export default defineConfig([
   globalIgnores(["dist/**", "coverage/**"]),
   {
     files: ["src/**/*.ts"],
-    extends: [
-      eslint.configs.recommended,
-      ...tseslint.configs.strictTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
-      eslintConfigPrettier,
-    ],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
+    extends: sharedExtends,
+    languageOptions: sharedLanguageOptions,
     rules: { ...sharedRules },
   },
   {
     files: ["tests/**/*.ts"],
-    extends: [
-      eslint.configs.recommended,
-      ...tseslint.configs.strictTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
-      eslintConfigPrettier,
-    ],
+    extends: sharedExtends,
     plugins: { vitest },
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
+    languageOptions: sharedLanguageOptions,
     rules: {
       ...vitest.configs.recommended.rules,
       ...sharedRules,
